@@ -1,0 +1,71 @@
+string Names,result,external,position,areaVar;
+numeric string HeatList,outputList;
+int Number=0;
+if (board){
+  board(B) {
+    sprintf(position,"Area: %f %f %f %f \n",
+      u2mm(B.area.x1), u2mm(B.area.y1), u2mm(B.area.x2),
+      u2mm(B.area.y2));
+    outputList += position;
+    B.elements(E) {
+      E.attributes(A)
+        {
+          if(A.name == "HEATMAX")
+          {
+            Number++;
+            HeatList+=E.name;
+            HeatList+= " ";
+            sprintf(areaVar,"%f %f ",u2mm(E.x),u2mm(E.y));
+            outputList += areaVar;
+            if(E.footprint.area) {
+              sprintf(areaVar,"%f ",(u2mm(E.footprint.area.x2)-u2mm(E.footprint.area.x1))*((u2mm(E.footprint.area.y2)-u2mm(E.footprint.area.y1))));
+              outputList += areaVar;
+            } else {
+             sprintf(result,"no footprint");
+             dlgMessageBox(result,"+OK");
+            }
+            outputList += A.value;
+            outputList += "\n";
+          }
+        }
+    }
+    sprintf(result,"%d Parts, Max Heat Capacity:%s",Number,HeatList);
+    dlgMessageBox(result,"+OK");
+  }
+  output("/Users/richardzane/Documents/EAGLE/ulps/HeatULP/output.txt", "wt") {
+    dlgMessageBox(outputList,"+OK");
+    printf(outputList);
+  }
+  int x = system("/usr/local/opt/python/bin/python3.7 /Users/richardzane/Documents/EAGLE/ulps/HeatMapThubber/drawHeat.py > /Users/richardzane/Documents/EAGLE/ulps/HeatULP/o.txt 2> /Users/richardzane/Documents/EAGLE/ulps/HeatMapThubber/files/error.txt");
+  if (x != 0){
+    sprintf(external,"script exit code: %d",x);
+    dlgMessageBox(external,"+OK");
+  }
+}
+
+
+
+
+
+if (schematic)
+  schematic(S)
+          {
+              S.parts(P)
+              {
+                 if (P.device.package)
+                 {
+                    P.attributes(A)
+                    {
+                      if(A.name)
+                      {
+                      Number++;
+                      HeatList+=A.value;
+                      HeatList+=", ";
+                      }
+                    }
+                  }
+              }
+              sprintf(result,"%d Parts, Max Heat Capacity:%s",Number,HeatList);
+              dlgMessageBox(result,"+OK");
+            }
+
