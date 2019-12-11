@@ -10,19 +10,22 @@ xArr = []
 yArr = []
 rArr = []
 
-inputFile = open("/Users/richardzane/Documents/EAGLE/ulps/HeatULP/output.txt","r")
+inputFile = open("/Users/richardzane/Documents/EAGLE/ulps/HeatMapThubber/files/output.txt","r")
 for l in inputFile:
     print(l)
     lS = l.split()
     if lS[0] == "Area:":
         bY = lS[1]
         bX = lS[2]
+        print(bY[1:])
+        print(bX)
         if bY[0] == '-':
             print("hello")
             bY = float(bY[1:])*(-1.0)
-        if bX[0] == '-':
+            bX = float(bX)
+        elif bX[0] == '-':
             bX = float(bX[1:])*(-1.0)
-
+            bY = float(bY)
         tY = float(lS[3])
         tX = float(lS[4])
     else:
@@ -95,11 +98,12 @@ def do_timestep(u0, u, mat):
     return u0, u
 
 # Number of timesteps
-nsteps = 501
+nsteps = 5001
 # Output 4 figures at these timesteps
 timeLim = 2000
-mfig = [500]
+mfig = [5000]
 fignum = 0
+time = 0
 fig = plt.figure()
 for m in range(nsteps):
     u0, u = do_timestep(u0, u, "pcb")
@@ -107,21 +111,30 @@ for m in range(nsteps):
         time = m*dtPcb*1000
         fignum += 1
         print(m, fignum, time)
-        ax = fig.add_subplot()
-        im = ax.imshow(u.copy(), cmap=plt.get_cmap('hot'), vmin=Tcool,vmax=Thot)
-        ax.set_axis_off()
+        im = plt.imshow(u.copy(), cmap=plt.get_cmap('hot'), vmin=Tcool,vmax=Thot)
+        plt.axis('off')
+#        ax.set_axis_off()
         # ax.set_title('{:.1f} ms' .format(time))
         if time >= timeLim:
             break
-fig.subplots_adjust(right=1,left=0,top=1,bottom=0)
+
+print("time:")
+print(time)
+fig.subplots_adjust(right=1,left=0,top=1,bottom=0,hspace=0,wspace=0)
+plt.margins(0,0)
 # cbar_ax = fig.add_axes([0.9, 0.15, 0.03, 0.7])
 # cbar_ax.set_xlabel('$T$ / K', labelpad=20)
 # fig.colorbar(im, cax=cbar_ax)
-fig.savefig("/Users/richardzane/Documents/EAGLE/ulps/HeatULP/heatmap.png")
-Image.open("/Users/richardzane/Documents/EAGLE/ulps/HeatULP/heatmap.png").save("/Users/richardzane/Documents/EAGLE/ulps/HeatULP/heatmap.bmp")
-img = Image.open("/Users/richardzane/Documents/EAGLE/ulps/HeatULP/heatmap.bmp")
-newimg = img.convert(mode='P', colors=16)
-newimg.save("/Users/richardzane/Documents/EAGLE/ulps/HeatULP/heatmap.bmp")
+#fig.set_size_inches(10,10)
+axe = plt.Axes(fig, [0., 0., 1., 1.])
+axe.set_axis_off()
+
+fig.savefig("/Users/richardzane/Documents/EAGLE/ulps/HeatMapThubber/files/heatmap.png",bbox_inches='tight',pad_inches=0)
+Image.open("/Users/richardzane/Documents/EAGLE/ulps/HeatMapThubber/files/heatmap.png").save("/Users/richardzane/Documents/EAGLE/ulps/HeatMapThubber/files/heatmap.bmp")
+
+img = Image.open("/Users/richardzane/Documents/EAGLE/ulps/HeatMapThubber/files/heatmap.bmp")
+newimg = img.convert(mode='P', colors=256)
+newimg.save("/Users/richardzane/Documents/EAGLE/ulps/HeatMapThubber/files/heatmap.bmp")
 # with Image(filename="heatimg.png") as img:
 #     with img.convert('bmp') as converted:
 #         newImg = converted.quantize(256,'rgb',0,False,False)

@@ -10,7 +10,7 @@ if (board){
     B.elements(E) {
       E.attributes(A)
         {
-          if(A.name == "HEATMAX")
+          if(A.name == "MAXHEAT")
           {
             Number++;
             HeatList+=E.name;
@@ -32,11 +32,11 @@ if (board){
     sprintf(result,"%d Parts, Max Heat Capacity:%s",Number,HeatList);
     dlgMessageBox(result,"+OK");
   }
-  output("/Users/richardzane/Documents/EAGLE/ulps/HeatULP/output.txt", "wt") {
+  output("/Users/richardzane/Documents/EAGLE/ulps/HeatMapThubber/files/output.txt", "wt") {
     dlgMessageBox(outputList,"+OK");
     printf(outputList);
   }
-  int x = system("/usr/local/opt/python/bin/python3.7 /Users/richardzane/Documents/EAGLE/ulps/HeatMapThubber/drawHeat.py > /Users/richardzane/Documents/EAGLE/ulps/HeatULP/o.txt 2> /Users/richardzane/Documents/EAGLE/ulps/HeatMapThubber/files/error.txt");
+  int x = system("/usr/local/opt/python/bin/python3.7 /Users/richardzane/Documents/EAGLE/ulps/HeatMapThubber/drawHeat.py > /Users/richardzane/Documents/EAGLE/ulps/HeatMapThubber/o.txt 2> /Users/richardzane/Documents/EAGLE/ulps/HeatMapThubber/files/error.txt");
   if (x != 0){
     sprintf(external,"script exit code: %d",x);
     dlgMessageBox(external,"+OK");
