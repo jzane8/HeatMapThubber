@@ -2,9 +2,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 import sys
 import math
-# from wand.image import Image
 from PIL import Image
-# MAGICK_HOME = "C:/Program Files/ImageMagick-6.9.10-Q16"
 
 xArr = []
 yArr = []
@@ -36,8 +34,6 @@ for l in inputFile:
 
 print(sys.argv)
 
-# plate size, mm
-# w = h = 20.
 w = tX - bX
 h = tY - bY
 
@@ -48,8 +44,7 @@ print(w)
 print(h)
 # intervals in x-, y- directions, mm
 dx = dy = 0.1
-# Thermal diffusivity of steel, mm2.s-1
-# D = 4.
+
 # Thermal diffusivity of epoxy resin, aka pcb material
 Dpcb = 0.13
 #thermal diffusivity of thubber
@@ -72,6 +67,10 @@ u = np.empty((nx, ny))
 r2Arr = []
 pArr = []
 
+
+x = [1,2,3,4,5]
+print(x[1:-1])
+
 for rad in rArr:
     r2Arr.append(rad**2)
 
@@ -82,49 +81,62 @@ for i in range(nx):
             pArr.append(thisP)
             if thisP < r2Arr[k]:
                 u0[i,j] = Thot
+                
+sDivideX = int(w/2)
+sDivideY = int(h/2)
 
-def do_timestep(u0, u, mat):
-    if mat == "pcb":
-        D = Dpcb
-        dt = dtPcb
-    elif mat == "thubber":
-        D = Dthub
-        dt = dtThub
+def do_timestep(u0, u):
+
+        
+#    if u0[m,m] <= sDivideX:
+#        u0, u = do_timestep(u0, u, "thubber")
+#    else:
+#        u0, u = do_timestep(u0, u, "pcb")
+    
+    
+   
     # Propagate with forward-difference in time, central-difference in space
-    u[1:-1, 1:-1] = u0[1:-1, 1:-1] + D * dt * (
-          (u0[2:, 1:-1] - 2*u0[1:-1, 1:-1] + u0[:-2, 1:-1])/dx2
-          + (u0[1:-1, 2:] - 2*u0[1:-1, 1:-1] + u0[1:-1, :-2])/dy2 )
+    D = Dpcb
+    dt = dtPcb
+    u[1:sDivideX-1, 1:sDivideY-1] = u0[1:sDivideX-1, 1:sDivideY-1] + D * dt * ((u0[2:sDivideX, 1:sDivideY-1] - 2*u0[1:sDivideX-1, 1:sDivideY-1] +u0[:sDivideX-2, 1:sDivideY-1])/dx2 + (u0[1:sDivideX-1, 2:sDivideY] - 2*u0[1:sDivideX-1, 1:sDivideY-1] + u0[1:sDivideX-1, :sDivideY-2])/dy2)
+    D = Dthub
+    dt = dtThub
+    u[sDivideX+1:-1, sDivideY+1:-1] = u0[sDivideX+1:-1, sDivideY+1:-1] + D * dt * ((u0[sDivideX+2:, sDivideY+1:-1] - 2*u0[sDivideX+1:-1, sDivideY+1:-1] +u0[sDivideX:-2, sDivideY+1:-1])/dx2 + (u0[sDivideX+1:-1, sDivideY+2:] - 2*u0[sDivideX+1:-1, sDivideY+1:-1] + u0[sDivideX+1:-1, sDivideY:-2])/dy2)
+    
+#    u[1:-1, 1:-1] = u0[1:-1, 1:-1] + D * dt * ((u0[2:, 1:-1] - 2*u0[1:-1, 1:-1] +u0[:-2, 1:-1])/dx2 + (u0[1:-1, 2:] - 2*u0[1:-1, 1:-1] + u0[1:-1, :-2])/dy2)
     u0 = u.copy()
     return u0, u
+    
+
 
 # Number of timesteps
-nsteps = 5001
-# Output 4 figures at these timesteps
-timeLim = 2000
-mfig = [5000]
+nsteps = 10001
+#timeLim = 2000
+mfig = [4000,10000]
 fignum = 0
 time = 0
 fig = plt.figure()
 for m in range(nsteps):
-    u0, u = do_timestep(u0, u, "pcb")
+    u0,u = do_timestep(u0,u)
     if m in mfig:
-        time = m*dtPcb*1000
+        
+        time = m*dtThub*1000
         fignum += 1
         print(m, fignum, time)
         im = plt.imshow(u.copy(), cmap=plt.get_cmap('hot'), vmin=Tcool,vmax=Thot)
         plt.axis('off')
 #        ax.set_axis_off()
         # ax.set_title('{:.1f} ms' .format(time))
-        if time >= timeLim:
-            break
+#        if time >= timeLim:
+#            break
 
 print("time:")
-print(time)
+print(str(time) + " ms")
 fig.subplots_adjust(right=1,left=0,top=1,bottom=0,hspace=0,wspace=0)
 plt.margins(0,0)
 # cbar_ax = fig.add_axes([0.9, 0.15, 0.03, 0.7])
 # cbar_ax.set_xlabel('$T$ / K', labelpad=20)
-# fig.colorbar(im, cax=cbar_ax)
+#fig.colorbar(im, cax=cbar_ax)
 #fig.set_size_inches(10,10)
 axe = plt.Axes(fig, [0., 0., 1., 1.])
 axe.set_axis_off()
@@ -135,9 +147,5 @@ Image.open("/Users/richardzane/Documents/EAGLE/ulps/HeatMapThubber/files/heatmap
 img = Image.open("/Users/richardzane/Documents/EAGLE/ulps/HeatMapThubber/files/heatmap.bmp")
 newimg = img.convert(mode='P', colors=256)
 newimg.save("/Users/richardzane/Documents/EAGLE/ulps/HeatMapThubber/files/heatmap.bmp")
-# with Image(filename="heatimg.png") as img:
-#     with img.convert('bmp') as converted:
-#         newImg = converted.quantize(256,'rgb',0,False,False)
-#         converted.save(filename='heatbmp.bmp')
 
 plt.show()
