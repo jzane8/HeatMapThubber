@@ -8,7 +8,8 @@ xArr = []
 yArr = []
 rArr = []
 
-inputFile = open("/Users/richardzane/Documents/EAGLE/ulps/HeatMapThubber/files/output.txt","r")
+
+inputFile = open("files/output.txt","r") 
 for l in inputFile:
     print(l)
     lS = l.split()
