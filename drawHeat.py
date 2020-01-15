@@ -85,17 +85,27 @@ for i in range(nx):
             if thisP < r2Arr[k]:
                 u0[i,j] = Thot
 
-sDivideX = int(50)
-sDivideY = int(50)
+sDivideX = int(nx/2)
+sDivideY = int(ny/2)
 
 def do_timestep(u0, u):
     # Propagate with forward-difference in time, central-difference in space
 
-    u[1:sDivideX-1, 1:sDivideY-1] = u0[1:sDivideX-1, 1:sDivideY-1] + Dthub * dtThub * ((u0[2:sDivideX, 1:sDivideY-1] - 2*u0[1:sDivideX-1, 1:sDivideY-1] +u0[:sDivideX-2, 1:sDivideY-1])/dx2 + (u0[1:sDivideX-1, 2:sDivideY] - 2*u0[1:sDivideX-1, 1:sDivideY-1] + u0[1:sDivideX-1, :sDivideY-2])/dy2)
-
-    u[sDivideX+1:-1, sDivideY+1:-1] = u0[sDivideX+1:-1, sDivideY+1:-1] + Dthub * dtThub * ((u0[sDivideX+2:, sDivideY+1:-1] - 2*u0[sDivideX+1:-1, sDivideY+1:-1] +u0[sDivideX:-2, sDivideY+1:-1])/dx2 + (u0[sDivideX+1:-1, sDivideY+2:] - 2*u0[sDivideX+1:-1, sDivideY+1:-1] + u0[sDivideX+1:-1, sDivideY:-2])/dy2)
-
+    # u[1:sDivideX-1, 1:sDivideY-1] = u0[1:sDivideX-1, 1:sDivideY-1] + Dthub * dtThub * ((u0[2:sDivideX, 1:sDivideY-1] - 2*u0[1:sDivideX-1, 1:sDivideY-1] +u0[:sDivideX-2, 1:sDivideY-1])/dx2 + (u0[1:sDivideX-1, 2:sDivideY] - 2*u0[1:sDivideX-1, 1:sDivideY-1] + u0[1:sDivideX-1, :sDivideY-2])/dy2)
+    # u[sDivideX+1:-1, sDivideY+1:-1] = u0[sDivideX+1:-1, sDivideY+1:-1] + Dthub * dtThub * ((u0[sDivideX+2:, sDivideY+1:-1] - 2*u0[sDivideX+1:-1, sDivideY+1:-1] +u0[sDivideX:-2, sDivideY+1:-1])/dx2 + (u0[sDivideX+1:-1, sDivideY+2:] - 2*u0[sDivideX+1:-1, sDivideY+1:-1] + u0[sDivideX+1:-1, sDivideY:-2])/dy2)
     # u[1:-1, 1:-1] = u0[1:-1, 1:-1] + D * dt * ((u0[2:, 1:-1] - 2*u0[1:-1, 1:-1] +u0[:-2, 1:-1])/dx2 + (u0[1:-1, 2:] - 2*u0[1:-1, 1:-1] + u0[1:-1, :-2])/dy2)
+
+    vectArr = ((u0[2:, 1:-1] - 2*u0[1:-1, 1:-1] +u0[:-2, 1:-1])/dx2 + (u0[1:-1, 2:] - 2*u0[1:-1, 1:-1] + u0[1:-1, :-2])/dy2)
+    vShape = vectArr.shape
+    vectArr2 = np.empty(vShape)
+    for i in range(0, vShape[0]):
+        for j in range(0, vShape[1]):
+            # print((i,j))
+            if i < sDivideX and j < sDivideY:
+                vectArr2[i,j] = vectArr[i,j] * dtPcb * Dpcb
+            else:
+                vectArr2[i,j] = vectArr[i,j] * dtThub * Dthub
+    u[1:-1, 1:-1] = u0[1:-1, 1:-1] + vectArr2
     u0 = u.copy()
     return u0, u
 
@@ -105,9 +115,9 @@ def slow_timestep(u0,u):
             uxx = (u0[i+1,j] - 2*u0[i,j] + u0[i-1,j]) / dx2
             uyy = (u0[i,j+1] - 2*u0[i,j] + u0[i,j-1]) / dy2
             if i < sDivideX and j < sDivideY:
-                u[i,j] = u0[i,j] + dtPcb * Dpcb * (uxx + uyy)
+                u[i,j] = u0[i,j] + dtPcb * Dpcb * 10*(uxx + uyy)
             else:
-                u[i,j] = u0[i,j] + dtThub * Dthub * (uxx + uyy)
+                u[i,j] = u0[i,j] + dtThub * Dthub * 10*(uxx + uyy)
 
     return u0,u
 
@@ -120,8 +130,8 @@ fignum = 0
 time = 0
 fig = plt.figure()
 for m in range(nsteps):
-    # u0,u = do_timestep(u0,u)
     u0,u = do_timestep(u0,u)
+    # u0,u = slow_timestep(u0,u)
     if m in mfig:
         print(u.shape)
         print((sDivideX,sDivideY))
