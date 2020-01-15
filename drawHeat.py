@@ -9,7 +9,9 @@ yArr = []
 rArr = []
 
 
-inputFile = open("files/output.txt","r") 
+#inputFile = open("/Users/richardzane/Documents/EAGLE/ulps/HeatMapThubber/files/output.txt","r")
+inputFile = open("files/output.txt","r")
+
 for l in inputFile:
     print(l)
     lS = l.split()
@@ -44,7 +46,7 @@ for i in range(len(xArr)):
 print(w)
 print(h)
 # intervals in x-, y- directions, mm
-dx = dy = .1
+dx = dy = 1
 
 # Thermal diffusivity of epoxy resin, aka pcb material
 Dpcb = 0.13
@@ -88,7 +90,7 @@ for i in range(nx):
 
 sDivideX = int(nx/2)
 sDivideY = int(ny/2)
-
+timeMultiplier = 100
 def do_timestep(u0, u):
     # Propagate with forward-difference in time, central-difference in space
 
@@ -101,7 +103,7 @@ def do_timestep(u0, u):
     vectArr2 = np.empty(vShape)
     for i in range(0, vShape[0]):
         for j in range(0, vShape[1]):
-            # print((i,j))
+#            print((i,j))
             if i < sDivideX and j < sDivideY:
                 vectArr2[i,j] = vectArr[i,j] * dtPcb * Dpcb
             else:
@@ -124,9 +126,9 @@ def slow_timestep(u0,u):
 
 
 # Number of timesteps
-nsteps = 501
+nsteps = 101
 #timeLim = 2000
-mfig = [500]
+mfig = [100]
 fignum = 0
 time = 0
 fig = plt.figure()
@@ -160,11 +162,19 @@ plt.margins(0,0)
 axe = plt.Axes(fig, [0., 0., 1., 1.])
 axe.set_axis_off()
 
-fig.savefig("/Users/richardzane/Documents/EAGLE/ulps/HeatMapThubber/files/heatmap.png",bbox_inches='tight',pad_inches=0)
-Image.open("/Users/richardzane/Documents/EAGLE/ulps/HeatMapThubber/files/heatmap.png").save("/Users/richardzane/Documents/EAGLE/ulps/HeatMapThubber/files/heatmap.bmp")
+# addresses need to be hardcoded if you're running the file from EAGLE
+#fig.savefig("/Users/richardzane/Documents/EAGLE/ulps/HeatMapThubber/files/heatmap.png",bbox_inches='tight',pad_inches=0)
+#Image.open("/Users/richardzane/Documents/EAGLE/ulps/HeatMapThubber/files/heatmap.png").save("/Users/richardzane/Documents/EAGLE/ulps/HeatMapThubber/files/heatmap.bmp")
+#
+#img = Image.open("/Users/richardzane/Documents/EAGLE/ulps/HeatMapThubber/files/heatmap.bmp")
+#newimg = img.convert(mode='P', colors=256)
+#newimg.save("/Users/richardzane/Documents/EAGLE/ulps/HeatMapThubber/files/heatmap.bmp")
 
-img = Image.open("/Users/richardzane/Documents/EAGLE/ulps/HeatMapThubber/files/heatmap.bmp")
+fig.savefig("files/heatmap.png",bbox_inches='tight',pad_inches=0)
+Image.open("files/heatmap.png").save("files/heatmap.bmp")
+
+img = Image.open("files/heatmap.bmp")
 newimg = img.convert(mode='P', colors=256)
-newimg.save("/Users/richardzane/Documents/EAGLE/ulps/HeatMapThubber/files/heatmap.bmp")
+newimg.save("files/heatmap.bmp")
 
 plt.show()
