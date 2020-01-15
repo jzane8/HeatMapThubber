@@ -55,7 +55,7 @@ Dthub = 8.65
 
 D = Dthub
 
-Tcool, Thot = 300, 700
+Tcool, Thot = 500, 1000
 
 nx, ny = int(w/dx), int(h/dy)
 
@@ -88,8 +88,8 @@ for i in range(nx):
             if thisP < r2Arr[k]:
                 u0[i,j] = Thot
 
-sDivideX = int(nx/2)
-sDivideY = int(ny/2)
+sDivideX = int(500)
+sDivideY = int(500)
 timeMultiplier = 100
 def do_timestep(u0, u):
     # Propagate with forward-difference in time, central-difference in space
@@ -126,9 +126,9 @@ def slow_timestep(u0,u):
 
 
 # Number of timesteps
-nsteps = 101
+nsteps = 501
 #timeLim = 2000
-mfig = [100]
+mfig = [100,300,500]
 fignum = 0
 time = 0
 fig = plt.figure()
@@ -138,12 +138,18 @@ for m in range(nsteps):
     if m in mfig:
         print(u.shape)
         print((sDivideX,sDivideY))
-        u[sDivideX,0:] = 500
-        u[0:,sDivideY] = 500
+        # u[sDivideX,0:] = 1000
+        # u[0:,sDivideY] = 1000
 
         time = m
         fignum += 1
         print(m, fignum, time)
+        if len(mfig) > 1:
+            ax = fig.add_subplot(220 + fignum)
+            im = ax.imshow(u.copy(), cmap=plt.get_cmap('hot'), vmin=Tcool,vmax=Thot)
+            ax.set_axis_off()
+            ax.set_title('{:.1f} ms'.format(m*dt*1000))
+
         im = plt.imshow(u.copy(), cmap=plt.get_cmap('hot'), vmin=Tcool,vmax=Thot)
         plt.axis('off')
 #        ax.set_axis_off()
