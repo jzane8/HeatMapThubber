@@ -43,14 +43,16 @@ for i in range(len(xArr)):
 print(w)
 print(h)
 # intervals in x-, y- directions, mm
-dx = dy = 0.1
+dx = dy = .1
 
 # Thermal diffusivity of epoxy resin, aka pcb material
 Dpcb = 0.13
 #thermal diffusivity of thubber
 Dthub = 8.65
 
-Tcool, Thot = 300, 350
+D = Dthub
+
+Tcool, Thot = 300, 700
 
 nx, ny = int(w/dx), int(h/dy)
 
@@ -58,6 +60,7 @@ dx2, dy2 = dx*dx, dy*dy
 # dt = dx2 * dy2 / (2 * D * (dx2 + dy2))
 dtPcb = dx2 * dy2 / (2 * Dpcb * (dx2 + dy2))
 dtThub = dx2 * dy2 / (2 * Dthub * (dx2 + dy2))
+dt = dtThub
 
 u0 = Tcool * np.ones((nx, ny))
 u = np.empty((nx, ny))
@@ -81,46 +84,51 @@ for i in range(nx):
             pArr.append(thisP)
             if thisP < r2Arr[k]:
                 u0[i,j] = Thot
-                
-sDivideX = int(w/2)
-sDivideY = int(h/2)
+
+sDivideX = int(50)
+sDivideY = int(50)
 
 def do_timestep(u0, u):
-
-        
-#    if u0[m,m] <= sDivideX:
-#        u0, u = do_timestep(u0, u, "thubber")
-#    else:
-#        u0, u = do_timestep(u0, u, "pcb")
-    
-    
-   
     # Propagate with forward-difference in time, central-difference in space
-    D = Dpcb
-    dt = dtPcb
-    u[1:sDivideX-1, 1:sDivideY-1] = u0[1:sDivideX-1, 1:sDivideY-1] + D * dt * ((u0[2:sDivideX, 1:sDivideY-1] - 2*u0[1:sDivideX-1, 1:sDivideY-1] +u0[:sDivideX-2, 1:sDivideY-1])/dx2 + (u0[1:sDivideX-1, 2:sDivideY] - 2*u0[1:sDivideX-1, 1:sDivideY-1] + u0[1:sDivideX-1, :sDivideY-2])/dy2)
-    D = Dthub
-    dt = dtThub
-    u[sDivideX+1:-1, sDivideY+1:-1] = u0[sDivideX+1:-1, sDivideY+1:-1] + D * dt * ((u0[sDivideX+2:, sDivideY+1:-1] - 2*u0[sDivideX+1:-1, sDivideY+1:-1] +u0[sDivideX:-2, sDivideY+1:-1])/dx2 + (u0[sDivideX+1:-1, sDivideY+2:] - 2*u0[sDivideX+1:-1, sDivideY+1:-1] + u0[sDivideX+1:-1, sDivideY:-2])/dy2)
-    
-#    u[1:-1, 1:-1] = u0[1:-1, 1:-1] + D * dt * ((u0[2:, 1:-1] - 2*u0[1:-1, 1:-1] +u0[:-2, 1:-1])/dx2 + (u0[1:-1, 2:] - 2*u0[1:-1, 1:-1] + u0[1:-1, :-2])/dy2)
+
+    u[1:sDivideX-1, 1:sDivideY-1] = u0[1:sDivideX-1, 1:sDivideY-1] + Dthub * dtThub * ((u0[2:sDivideX, 1:sDivideY-1] - 2*u0[1:sDivideX-1, 1:sDivideY-1] +u0[:sDivideX-2, 1:sDivideY-1])/dx2 + (u0[1:sDivideX-1, 2:sDivideY] - 2*u0[1:sDivideX-1, 1:sDivideY-1] + u0[1:sDivideX-1, :sDivideY-2])/dy2)
+
+    u[sDivideX+1:-1, sDivideY+1:-1] = u0[sDivideX+1:-1, sDivideY+1:-1] + Dthub * dtThub * ((u0[sDivideX+2:, sDivideY+1:-1] - 2*u0[sDivideX+1:-1, sDivideY+1:-1] +u0[sDivideX:-2, sDivideY+1:-1])/dx2 + (u0[sDivideX+1:-1, sDivideY+2:] - 2*u0[sDivideX+1:-1, sDivideY+1:-1] + u0[sDivideX+1:-1, sDivideY:-2])/dy2)
+
+    # u[1:-1, 1:-1] = u0[1:-1, 1:-1] + D * dt * ((u0[2:, 1:-1] - 2*u0[1:-1, 1:-1] +u0[:-2, 1:-1])/dx2 + (u0[1:-1, 2:] - 2*u0[1:-1, 1:-1] + u0[1:-1, :-2])/dy2)
     u0 = u.copy()
     return u0, u
-    
+
+def slow_timestep(u0,u):
+    for i in range(1, nx-1):
+        for j in range(1, ny-1):
+            uxx = (u0[i+1,j] - 2*u0[i,j] + u0[i-1,j]) / dx2
+            uyy = (u0[i,j+1] - 2*u0[i,j] + u0[i,j-1]) / dy2
+            if i < sDivideX and j < sDivideY:
+                u[i,j] = u0[i,j] + dtPcb * Dpcb * (uxx + uyy)
+            else:
+                u[i,j] = u0[i,j] + dtThub * Dthub * (uxx + uyy)
+
+    return u0,u
 
 
 # Number of timesteps
-nsteps = 10001
+nsteps = 501
 #timeLim = 2000
-mfig = [4000,10000]
+mfig = [500]
 fignum = 0
 time = 0
 fig = plt.figure()
 for m in range(nsteps):
+    # u0,u = do_timestep(u0,u)
     u0,u = do_timestep(u0,u)
     if m in mfig:
-        
-        time = m*dtThub*1000
+        print(u.shape)
+        print((sDivideX,sDivideY))
+        u[sDivideX,0:] = 500
+        u[0:,sDivideY] = 500
+
+        time = m
         fignum += 1
         print(m, fignum, time)
         im = plt.imshow(u.copy(), cmap=plt.get_cmap('hot'), vmin=Tcool,vmax=Thot)
