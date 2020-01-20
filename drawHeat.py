@@ -46,12 +46,13 @@ for i in range(len(xArr)):
 print(w)
 print(h)
 # intervals in x-, y- directions, mm
-dx = dy = 1
+dx = dy = .1
 
 # Thermal diffusivity of epoxy resin, aka pcb material
-Dpcb = 0.13
+Dpcb = .13
 #thermal diffusivity of thubber
-Dthub = 8.65
+# Dthub = 8.65
+Dthub = 100
 
 D = Dthub
 
@@ -88,8 +89,8 @@ for i in range(nx):
             if thisP < r2Arr[k]:
                 u0[i,j] = Thot
 
-sDivideX = int(500)
-sDivideY = int(500)
+sDivideX = int(nx/2)
+sDivideY = int(ny/2)
 timeMultiplier = 100
 def do_timestep(u0, u):
     # Propagate with forward-difference in time, central-difference in space
@@ -102,12 +103,22 @@ def do_timestep(u0, u):
     vShape = vectArr.shape
     vectArr2 = np.empty(vShape)
     for i in range(0, vShape[0]):
+        # print("Calculated row " + str(i) + "/" + str(vShape[0]))
         for j in range(0, vShape[1]):
-#            print((i,j))
             if i < sDivideX and j < sDivideY:
+                # print("pcb")
                 vectArr2[i,j] = vectArr[i,j] * dtPcb * Dpcb
             else:
+                # print("thubber")
                 vectArr2[i,j] = vectArr[i,j] * dtThub * Dthub
+                #
+                # if(vectArr[i,j] * dtThub * Dthub > 0):
+                #     print("THUB")
+                #     print(vectArr[i,j] * dtThub * Dthub)
+                # if(vectArr[i,j] * dtPcb * Dpcb > 0):
+                #     print("PCB")
+                #     print(vectArr[i,j] * dtPcb * Dpcb)
+
     u[1:-1, 1:-1] = u0[1:-1, 1:-1] + vectArr2
     u0 = u.copy()
     return u0, u
@@ -121,18 +132,18 @@ def slow_timestep(u0,u):
                 u[i,j] = u0[i,j] + dtPcb * Dpcb * 10*(uxx + uyy)
             else:
                 u[i,j] = u0[i,j] + dtThub * Dthub * 10*(uxx + uyy)
-
     return u0,u
 
 
 # Number of timesteps
-nsteps = 501
+nsteps = 10001
 #timeLim = 2000
-mfig = [100,300,500]
+mfig = [1000,5000,10000]
 fignum = 0
 time = 0
 fig = plt.figure()
 for m in range(nsteps):
+    print("Calculated step " + str(m) + "/" + str(nsteps))
     u0,u = do_timestep(u0,u)
     # u0,u = slow_timestep(u0,u)
     if m in mfig:
@@ -147,11 +158,11 @@ for m in range(nsteps):
         if len(mfig) > 1:
             ax = fig.add_subplot(220 + fignum)
             im = ax.imshow(u.copy(), cmap=plt.get_cmap('hot'), vmin=Tcool,vmax=Thot)
-            ax.set_axis_off()
-            ax.set_title('{:.1f} ms'.format(m*dt*1000))
-
+            # ax.set_axis_off()
+            # ax.set_title('{:.1f} ms'.format(m*dt*1000))
+        # print("milliseconds: "+ str(m*dt*1000))
         im = plt.imshow(u.copy(), cmap=plt.get_cmap('hot'), vmin=Tcool,vmax=Thot)
-        plt.axis('off')
+        # plt.axis('off')
 #        ax.set_axis_off()
         # ax.set_title('{:.1f} ms' .format(time))
 #        if time >= timeLim:
