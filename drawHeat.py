@@ -52,7 +52,7 @@ dx = dy = .1
 Dpcb = .13
 #thermal diffusivity of thubber
 # Dthub = 8.65
-Dthub = 100
+Dthub = 1000
 
 D = Dthub
 
@@ -89,15 +89,15 @@ for i in range(nx):
             if thisP < r2Arr[k]:
                 u0[i,j] = Thot
 
-sDivideX = int(nx/2)
-sDivideY = int(ny/2)
+sDivideX = int(500)
+sDivideY = int(1000)
 timeMultiplier = 100
 def do_timestep(u0, u):
     # Propagate with forward-difference in time, central-difference in space
 
     # u[1:sDivideX-1, 1:sDivideY-1] = u0[1:sDivideX-1, 1:sDivideY-1] + Dthub * dtThub * ((u0[2:sDivideX, 1:sDivideY-1] - 2*u0[1:sDivideX-1, 1:sDivideY-1] +u0[:sDivideX-2, 1:sDivideY-1])/dx2 + (u0[1:sDivideX-1, 2:sDivideY] - 2*u0[1:sDivideX-1, 1:sDivideY-1] + u0[1:sDivideX-1, :sDivideY-2])/dy2)
     # u[sDivideX+1:-1, sDivideY+1:-1] = u0[sDivideX+1:-1, sDivideY+1:-1] + Dthub * dtThub * ((u0[sDivideX+2:, sDivideY+1:-1] - 2*u0[sDivideX+1:-1, sDivideY+1:-1] +u0[sDivideX:-2, sDivideY+1:-1])/dx2 + (u0[sDivideX+1:-1, sDivideY+2:] - 2*u0[sDivideX+1:-1, sDivideY+1:-1] + u0[sDivideX+1:-1, sDivideY:-2])/dy2)
-    # u[1:-1, 1:-1] = u0[1:-1, 1:-1] + D * dt * ((u0[2:, 1:-1] - 2*u0[1:-1, 1:-1] +u0[:-2, 1:-1])/dx2 + (u0[1:-1, 2:] - 2*u0[1:-1, 1:-1] + u0[1:-1, :-2])/dy2)
+    u[1:-1, 1:-1] = u0[1:-1, 1:-1] + D * dt * ((u0[2:, 1:-1] - 2*u0[1:-1, 1:-1] +u0[:-2, 1:-1])/dx2 + (u0[1:-1, 2:] - 2*u0[1:-1, 1:-1] + u0[1:-1, :-2])/dy2)
 
     vectArr = ((u0[2:, 1:-1] - 2*u0[1:-1, 1:-1] +u0[:-2, 1:-1])/dx2 + (u0[1:-1, 2:] - 2*u0[1:-1, 1:-1] + u0[1:-1, :-2])/dy2)
     vShape = vectArr.shape
@@ -136,9 +136,9 @@ def slow_timestep(u0,u):
 
 
 # Number of timesteps
-nsteps = 10001
+nsteps = 5001
 #timeLim = 2000
-mfig = [1000,5000,10000]
+mfig = [1000,3000,5000]
 fignum = 0
 time = 0
 fig = plt.figure()

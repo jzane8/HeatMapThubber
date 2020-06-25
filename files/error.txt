@@ -1,0 +1,4 @@
+Traceback (most recent call last):
+  File "/Users/richardzane/Documents/EAGLE/ulps/HeatMapThubber/drawHeat.py", line 13, in <module>
+    inputFile = open("files/output.txt","r")
+FileNotFoundError: [Errno 2] No such file or directory: 'files/output.txt'
