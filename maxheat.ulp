@@ -36,6 +36,11 @@ if (board){
     dlgMessageBox(outputList,"+OK");
     printf(outputList);
   }
+
+  // system call to get values out of external python file. Right now the paths are hardcoded. The first is the location of my
+  // Python executable, the second is the location of the python script that needs to be run.
+  // The reason why they're global instead of relative to the local directory is because of a quirk in how EAGLE runs ULPs.
+
   int x = system("/usr/local/opt/python/bin/python3.7 /Users/richardzane/Documents/EAGLE/ulps/HeatMapThubber/drawHeat.py > /Users/richardzane/Documents/EAGLE/ulps/HeatMapThubber/o.txt 2> /Users/richardzane/Documents/EAGLE/ulps/HeatMapThubber/files/error.txt");
   if (x != 0){
     sprintf(external,"script exit code: %d",x);
@@ -68,4 +73,3 @@ if (schematic)
               sprintf(result,"%d Parts, Max Heat Capacity:%s",Number,HeatList);
               dlgMessageBox(result,"+OK");
             }
-
